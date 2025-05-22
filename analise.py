@@ -11,7 +11,6 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-# Instancia o client da OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.route("/analisar-letra", methods=["POST"])
@@ -22,9 +21,8 @@ def analisar_letra():
         return jsonify({"error": "Campo 'texto' é obrigatório."}), 400
 
     texto = data["texto"]
-    print(f"Texto recebido para análise: {texto[:200]}...")
 
-    prompt = f"""
+    prompt_analise = f"""
 Analise a emoção predominante da seguinte letra de música e retorne **exatamente** no seguinte formato:
 
 Emoção: <uma palavra>
@@ -41,23 +39,19 @@ Letra:
 """
 
     try:
-        print("Enviando requisição para a OpenAI...")
-
+        # Geração da análise
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "Você é um assistente inteligente que analisa letras de música."},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt_analise}
             ],
             max_tokens=400,
             temperature=0.7
         )
 
         content = response.choices[0].message.content
-        print("Resposta crua da OpenAI:")
-        print(repr(content))  # Para debug, mostra quebras de linha etc.
 
-        # Regex para extrair todos os campos
         regex = re.compile(
             r"Emoção:\s*(?P<emocao>.+?)\s*[\r\n]+"
             r"Cores:\s*(?P<cores>.+?)\s*[\r\n]+"
@@ -74,30 +68,48 @@ Letra:
         if not match:
             raise ValueError("Resposta inesperada do modelo.")
 
-        # Extrair e preparar os dados
-        emocao = match.group("emocao").strip()
-        cores = [cor.strip() for cor in match.group("cores").split(",")]
-        descricao = match.group("descricao").strip()
-        tema = match.group("tema").strip()
-        tom = match.group("tom").strip()
-        mensagem = match.group("mensagem").strip()
-        estilo = match.group("estilo").strip()
-        palavras = [p.strip() for p in match.group("palavras").split(",")]
+        resultado = {
+            "emocao": match.group("emocao").strip(),
+            "cores": [c.strip() for c in match.group("cores").split(",")],
+            "descricao": match.group("descricao").strip(),
+            "tema": match.group("tema").strip(),
+            "tom_narrativo": match.group("tom").strip(),
+            "mensagem_central": match.group("mensagem").strip(),
+            "dispositivos_estilisticos": match.group("estilo").strip(),
+            "palavras_chave": [p.strip() for p in match.group("palavras").split(",")]
+        }
 
-        return jsonify({
-            "emocao": emocao,
-            "cores": cores,
-            "descricao": descricao,
-            "tema": tema,
-            "tom_narrativo": tom,
-            "mensagem_central": mensagem,
-            "dispositivos_estilisticos": estilo,
-            "palavras_chave": palavras
-        })
+        return jsonify(resultado)
 
     except Exception as e:
         print(f"Erro ao processar: {e}")
         return jsonify({"error": str(e)}), 500
+
+
+# Nova rota para gerar imagem com DALL·E 2
+@app.route("/gerar-imagem", methods=["POST"])
+def gerar_imagem():
+    data = request.get_json()
+
+    # Vamos pegar uma descrição para gerar a imagem, pode ser a emoção ou a descrição curta da análise
+    prompt_imagem = data.get("prompt")
+    if not prompt_imagem:
+        return jsonify({"error": "Campo 'prompt' é obrigatório para gerar imagem."}), 400
+
+    try:
+        response = client.images.generate(
+            model="dall-e-2",
+            prompt=prompt_imagem,
+            size="512x512",
+            n=1
+        )
+        image_url = response.data[0].url
+        return jsonify({"url": image_url})
+
+    except Exception as e:
+        print(f"Erro ao gerar imagem: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)

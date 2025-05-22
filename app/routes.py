@@ -31,8 +31,22 @@ def callback():
 
     nome = user_data.get('display_name', 'Usuário')
     email = user_data.get('email', 'não disponível')
+    imagem = user_data.get('images', [{}])[0].get('url', '') if user_data.get('images') else ''
+    pais = user_data.get('country', 'Desconhecido')
+    produto = user_data.get('product', 'desconhecido').capitalize()
+    seguidores = user_data.get('followers', {}).get('total', 0)
+    perfil_url = user_data.get('external_urls', {}).get('spotify', '#')
 
-    return render_template('index.html', nome=nome, email=email, track=None)
+    return render_template('index.html',
+                           nome=nome,
+                           email=email,
+                           imagem=imagem,
+                           pais=pais,
+                           produto=produto,
+                           seguidores=seguidores,
+                           perfil_url=perfil_url,
+                           track=None)
+
 
 @main_bp.route('/current-track')
 def current_track():

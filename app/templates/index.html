@@ -1,183 +1,337 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <title>Perfil Spotify</title>
+    <title>Emotionfy</title>
+    <link rel="icon" href="/static/emotionfy.png" type="image/png" />
     <style>
-        body {
-            background-color: #121212;
-            color: #1DB954;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            margin: 0;
-            padding: 2rem;
+      :root {
+        --primary: #1db954;
+        --background: #121212;
+        --card-bg: #1a1a1a;
+        --text-light: #b3b3b3;
+        --white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: var(--background);
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--white);
+      }
+
+      header {
+        background-color: #1c1c1c;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        color: var(--primary);
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .user-info {
+        font-size: 0.9rem;
+        color: var(--text-light);
+        text-align: right;
+      }
+
+      .user-info img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-left: 1rem;
+        vertical-align: middle;
+      }
+
+      .user-info a {
+        color: var(--primary);
+        font-size: 0.85rem;
+        text-decoration: none;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        display: flex;
+        gap: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .left-column,
+      .right-column {
+        flex: 1 1 48%;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .card {
+        background-color: var(--card-bg);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        width: 100%;
+      }
+
+      .card h2 {
+        margin-top: 0;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+      }
+
+      button {
+        background-color: var(--primary);
+        border: none;
+        border-radius: 30px;
+        color: var(--background);
+        padding: 10px 25px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0.5rem 0;
+      }
+
+      button:hover:enabled {
+        background-color: #1ed760cc;
+        box-shadow: 0 6px 20px rgba(30, 215, 96, 0.7);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 150px;
+        background-color: #222;
+        color: var(--white);
+        border: none;
+        padding: 1rem;
+        border-radius: 10px;
+        resize: vertical;
+        margin-top: 1rem;
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: var(--text-light);
+        background-color: #181818;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 1rem;
+      }
+
+      img {
+        width: 100%;
+        border-radius: 15px;
+        margin-top: 1rem;
+      }
+
+      .loading {
+        color: var(--primary);
+        font-style: italic;
+      }
+
+      footer {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: #777;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 992px) {
+        .container {
+          flex-direction: column;
         }
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 0.2rem;
-            color: white;
-            text-shadow: 0 0 10px #1DB954;
+        .left-column,
+        .right-column {
+          flex: 1 1 100%;
         }
-
-        p {
-            font-size: 1.2rem;
-            color: #b3b3b3;
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-        }
-
-        button {
-            background-color: #1DB954;
-            border: none;
-            border-radius: 50px;
-            color: #121212;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 5px 15px rgba(29, 185, 84, 0.4);
-            margin: 10px 0;
-        }
-
-        button:hover {
-            background-color: #1ed760cc;
-            box-shadow: 0 8px 20px rgba(30, 215, 96, 0.7);
-        }
-
-        textarea {
-            margin-top: 1rem;
-            width: 90%;
-            max-width: 700px;
-            font-size: 1rem;
-            padding: 10px;
-            border-radius: 10px;
-            border: none;
-            background: #1a1a1a;
-            color: white;
-            resize: vertical;
-        }
-
-        pre, #track-name {
-            margin-top: 1rem;
-            font-size: 1.1rem;
-            color: white;
-            max-width: 700px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            text-align: left;
-        }
-
-        footer {
-            margin-top: auto;
-            font-size: 0.9rem;
-            color: #666;
-        }
+      }
     </style>
-</head>
-<body>
-    <h1>Olá, {{ nome }}!</h1>
-    <p>Seu e-mail é: {{ email }}</p>
+  </head>
+  <body>
+    <header>
+      <div class="header-left">
+        <img
+          src="https://i.postimg.cc/nz29qyPG/emotionfy.png"
+          alt="Logo Emotionfy"
+          style="width: 50px; height: 50px"
+        />
+        <h1>Emotionfy</h1>
+      </div>
+      <div class="user-info">
+        {% if imagem %}
+        <img src="{{ imagem }}" alt="Foto de perfil" />
+        {% endif %}
+        <div><strong>{{ nome }}</strong></div>
+        <div>{{ email }}</div>
+        <div>
+          <a href="{{ perfil_url }}" target="_blank">Ver perfil no Spotify</a>
+        </div>
+      </div>
+    </header>
 
-    <button id="btn-track">Qual música está tocando?</button>
-    <p id="track-name"></p>
+    <section
+      style="
+        padding: 1rem 2rem;
+        background-color: #1a1a1a;
+        text-align: center;
+        color: var(--text-light);
+      "
+    >
+      <p>
+        <strong>Emotionfy</strong> é uma aplicação que une música, inteligência
+        artificial e visualização criativa. Aqui você pode analisar a
+        <em>letra</em> da música que está ouvindo no Spotify, entender as
+        emoções por trás dela, e visualizar essas emoções como imagens geradas
+        por IA. Tudo isso em tempo real.
+      </p>
+    </section>
 
-    <button id="btn-testar-genius">Buscar Letra da Música</button>
-    <pre id="teste-genius-resultado"></pre>
+    <div class="container">
+      <div class="left-column">
+        <div class="card">
+          <h2>🎧 Música Atual</h2>
+          <button id="btn-track">Ver música atual</button>
+          <p id="track-name" class="loading"></p>
+        </div>
 
-    <button id="btn-analisar-letra">Analisar Letra da Música</button>
-    <textarea id="letra-musica" rows="10" placeholder="A letra da música aparecerá aqui..."></textarea>
+        <div class="card">
+          <h2>📜 Letra da Música</h2>
+          <button id="btn-testar-genius">Buscar Letra</button>
+          <pre id="teste-genius-resultado"></pre>
+          <textarea
+            id="letra-musica"
+            placeholder="A letra da música aparecerá aqui..."
+          ></textarea>
+        </div>
+      </div>
 
-    <p>Resultado da análise:</p>
-    <pre id="teste-genius-analise"></pre>
+      <div class="right-column">
+        <div class="card">
+          <h2>🧠 Análise Visual e Emocional</h2>
+          <button id="btn-analisar-letra">Analisar Letra</button>
+          <div id="teste-genius-analise" style="margin-top: 1rem"></div>
+          <div id="imagem-analisada"></div>
+        </div>
+      </div>
+    </div>
 
-    <footer>
-        Desenvolvido com ❤️ pelo Eduardo
-    </footer>
+    <footer>Desenvolvido com ❤️ por Eduardo</footer>
 
     <script>
-        document.getElementById('btn-track').addEventListener('click', () => {
-            const trackNameEl = document.getElementById('track-name');
-            trackNameEl.innerText = "Carregando...";
-            fetch('/current-track')
-                .then(res => res.json())
-                .then(data => {
-                    trackNameEl.innerText = data.error ? `Erro: ${data.error}` : data.track;
-                })
-                .catch(() => {
-                    trackNameEl.innerText = 'Erro ao buscar música.';
-                });
-        });
+      document.getElementById("btn-track").addEventListener("click", () => {
+        const trackNameEl = document.getElementById("track-name");
+        trackNameEl.innerText = "Carregando...";
+        fetch("/current-track")
+          .then((res) => res.json())
+          .then((data) => {
+            trackNameEl.innerText = data.error
+              ? `Erro: ${data.error}`
+              : `🎵 ${data.track}`;
+          })
+          .catch(() => {
+            trackNameEl.innerText = "Erro ao buscar música.";
+          });
+      });
 
-        document.getElementById('btn-testar-genius').addEventListener('click', () => {
-            const output = document.getElementById('teste-genius-resultado');
-            const analiseEl = document.getElementById('teste-genius-analise');
-            const textarea = document.getElementById('letra-musica');
+      document.getElementById("btn-testar-genius").addEventListener("click", () => {
+        const output = document.getElementById("teste-genius-resultado");
+        const analiseEl = document.getElementById("teste-genius-analise");
+        const textarea = document.getElementById("letra-musica");
 
-            output.textContent = "Buscando música e letra...";
-            analiseEl.textContent = "";
-            textarea.value = "";
+        output.textContent = "Buscando música e letra...";
+        analiseEl.innerHTML = "";
+        textarea.value = "";
 
-            fetch('/testar-genius')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.erro) {
-                        output.textContent = `Erro: ${data.erro}`;
-                    } else {
-                        output.textContent = 
-                            `🎵 Música: ${data.musica}\n🎤 Artista: ${data.artista}\n🔗 URL: ${data.url_encontrada}`;
-                        textarea.value = data.letra;
-                    }
-                })
-                .catch(err => {
-                    output.textContent = "Erro ao buscar dados.";
-                    console.error(err);
-                });
-        });
+        fetch("/testar-genius")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.erro) {
+              output.textContent = `Erro: ${data.erro}`;
+            } else {
+              output.textContent = `🎵 Música: ${data.musica}\n🎤 Artista: ${data.artista}\n🔗 URL: ${data.url_encontrada}`;
+              textarea.value = data.letra;
+            }
+          })
+          .catch((err) => {
+            output.textContent = "Erro ao buscar dados.";
+            console.error(err);
+          });
+      });
 
-        document.getElementById('btn-analisar-letra').addEventListener('click', () => {
-        const textarea = document.getElementById('letra-musica');
-        const analiseEl = document.getElementById('teste-genius-analise');
+      document.getElementById("btn-analisar-letra").addEventListener("click", () => {
+        const textarea = document.getElementById("letra-musica");
+        const analiseEl = document.getElementById("teste-genius-analise");
+        const imagemContainer = document.getElementById("imagem-analisada");
         const texto = textarea.value;
+        const btn = document.getElementById("btn-analisar-letra");
 
         if (!texto.trim()) {
-            analiseEl.textContent = "Insira a letra para analisar.";
-            return;
+          analiseEl.innerHTML = "<p class='loading'>Insira a letra para analisar.</p>";
+          return;
         }
 
-        analiseEl.textContent = "Analisando...";
+        analiseEl.innerHTML = "<p class='loading'>Analisando...</p>";
+        imagemContainer.innerHTML = "";
+        btn.disabled = true;
+        btn.innerText = "Analisando...";
 
-        fetch('/analisar-letra', {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ letra: texto })  // <-- Corrigido aqui
+        fetch("/analisar-letra", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ letra: texto }),
         })
-        .then(res => res.json())
-        .then(data => {
+          .then((res) => res.json())
+          .then((data) => {
             if (data.error) {
-                analiseEl.textContent = `Erro: ${data.error}`;
+              analiseEl.innerHTML = `<p class='loading'>Erro: ${data.error}</p>`;
             } else {
-                analiseEl.textContent =
-                    `🎭 Emoção: ${data.emocao}\n` +
-                    `🎨 Cores: ${data.cores.join(', ')}\n` +
-                    `📝 Descrição: ${data.descricao}\n` +
-                    `📌 Tema: ${data.tema}\n` +
-                    `🔊 Tom Narrativo: ${data.tom_narrativo}\n` +
-                    `💡 Mensagem Central: ${data.mensagem_central}\n` +
-                    `🎨 Dispositivos Estilísticos: ${data.dispositivos_estilisticos}\n` +
-                    `🔑 Palavras-chave: ${data.palavras_chave.join(', ')}`;
+              analiseEl.innerHTML = `
+                <p>🎭 <strong>Emoção:</strong> ${data.emocao}</p>
+                <p>🎨 <strong>Cores:</strong> ${data.cores.join(", ")}</p>
+                <p>📝 <strong>Descrição:</strong> ${data.descricao}</p>
+                <p>📌 <strong>Tema:</strong> ${data.tema}</p>
+                <p>🔊 <strong>Tom Narrativo:</strong> ${data.tom_narrativo}</p>
+                <p>💡 <strong>Mensagem Central:</strong> ${data.mensagem_central}</p>
+                <p>🎨 <strong>Dispositivos Estilísticos:</strong> ${data.dispositivos_estilisticos}</p>
+                <p>🔑 <strong>Palavras-chave:</strong> ${data.palavras_chave.join(", ")}</p>
+              `;
+
+              imagemContainer.innerHTML = `<img src="${data.imagem_url}" alt="Imagem gerada" />`;
             }
-        })
-        .catch(err => {
-            analiseEl.textContent = "Erro ao analisar.";
-            console.error(err);
-        });
-    });
+          })
+          .catch(() => {
+            analiseEl.innerHTML = "<p class='loading'>Erro ao analisar letra.</p>";
+          })
+          .finally(() => {
+            btn.disabled = false;
+            btn.innerText = "Analisar Letra";
+          });
+      });
     </script>
-</body>
+  </body>
 </html>
