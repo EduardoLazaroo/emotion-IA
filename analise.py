@@ -1,11 +1,12 @@
 from openai import OpenAI
 import os
-from dotenv import load_dotenv
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import re
+import requests
+from io import BytesIO
+from flask import Flask, request, jsonify, send_file
+from flask_cors import CORS
+from dotenv import load_dotenv
 
-# Carrega variáveis do .env
 load_dotenv()
 
 app = Flask(__name__)
@@ -13,8 +14,8 @@ CORS(app)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Variável global para armazenar a última análise
 ultima_analise = None
+ultima_imagem_url = None
 
 @app.route("/analisar-letra", methods=["POST"])
 def analisar_letra():
@@ -42,7 +43,6 @@ Letra:
 """
 
     try:
-        # Geração da análise
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -93,7 +93,7 @@ Letra:
 
 @app.route("/gerar-imagem", methods=["POST"])
 def gerar_imagem():
-    global ultima_analise
+    global ultima_analise, ultima_imagem_url
 
     if not ultima_analise:
         return jsonify({"error": "Nenhuma análise disponível para gerar imagem."}), 400
@@ -110,12 +110,14 @@ def gerar_imagem():
 
     try:
         response = client.images.generate(
-            model="dall-e-2",
+            model="dall-e-3",
             prompt=prompt_dinamico,
-            size="512x512",
+            size="1024x1024",
             n=1
         )
         url_imagem = response.data[0].url
+        ultima_imagem_url = url_imagem
+
         return jsonify({
             "prompt_usado": prompt_dinamico,
             "url": url_imagem
@@ -123,6 +125,27 @@ def gerar_imagem():
     except Exception as e:
         print(f"Erro ao gerar imagem: {e}")
         return jsonify({"error": "Erro ao gerar imagem"}), 500
+
+@app.route("/download-imagem", methods=["GET"])
+def download_imagem():
+    global ultima_imagem_url
+
+    if not ultima_imagem_url:
+        return jsonify({"error": "Nenhuma imagem disponível para download."}), 400
+
+    try:
+        response = requests.get(ultima_imagem_url)
+        response.raise_for_status()
+
+        return send_file(
+            BytesIO(response.content),
+            mimetype="image/png",
+            as_attachment=True,
+            download_name="imagem_gerada.png"
+        )
+    except Exception as e:
+        print(f"Erro ao baixar imagem: {e}")
+        return jsonify({"error": "Erro ao baixar imagem para download."}), 500
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)

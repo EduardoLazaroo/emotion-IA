@@ -242,6 +242,7 @@
           <h2>🎨 Imagem Gerada pela IA</h2>
           <button id="btn-gerar-imagem">Gerar Imagem</button>
           <div id="imagem-container" style="margin-top: 1rem; display: flex; flex-direction: column;"></div>
+          <button onclick="baixarImagem()">Download da Imagem</button>
         </div>
       </div>
     </div>
@@ -249,6 +250,27 @@
     <footer>Desenvolvido com ❤️ por Eduardo</footer>
 
     <script>
+      function baixarImagem() {
+        fetch("http://localhost:5001/download-imagem")
+            .then(response => {
+            if (!response.ok) throw new Error("Erro no download");
+            return response.blob();
+            })
+            .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "imagem_gerada.png";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+            alert("Erro ao baixar imagem: " + error.message);
+            });
+        }
+
       document.getElementById("btn-gerar-imagem").addEventListener("click", () => {
         const botaoImagem = document.getElementById("btn-gerar-imagem");
         const container = document.getElementById("imagem-container");

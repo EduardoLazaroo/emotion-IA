@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # carrega variáveis do .env
+load_dotenv()
 
 class Config:
     CLIENT_ID = os.getenv('CLIENT_ID')
