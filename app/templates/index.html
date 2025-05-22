@@ -75,9 +75,22 @@
         flex-wrap: wrap;
       }
 
-      .left-column,
-      .right-column {
-        flex: 1 1 48%;
+      .column-left {
+        flex: 1 1 25%;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .column-middle {
+        flex: 1 1 50%;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .column-right {
+        flex: 1 1 25%;
         display: flex;
         flex-direction: column;
         gap: 2rem;
@@ -143,9 +156,11 @@
       }
 
       img {
-        width: 100%;
+        max-width: 100%;
+        max-height: 400px;
         border-radius: 15px;
         margin-top: 1rem;
+        object-fit: contain;
       }
 
       .loading {
@@ -165,8 +180,9 @@
           flex-direction: column;
         }
 
-        .left-column,
-        .right-column {
+        .column-left,
+        .column-middle,
+        .column-right {
           flex: 1 1 100%;
         }
       }
@@ -175,11 +191,7 @@
   <body>
     <header>
       <div class="header-left">
-        <img
-          src="https://i.postimg.cc/nz29qyPG/emotionfy.png"
-          alt="Logo Emotionfy"
-          style="width: 50px; height: 50px"
-        />
+        <img src="https://i.postimg.cc/nz29qyPG/emotionfy.png" alt="Logo Emotionfy" style="width: 50px; height: 50px" />
         <h1>Emotionfy</h1>
       </div>
       <div class="user-info">
@@ -188,31 +200,20 @@
         {% endif %}
         <div><strong>{{ nome }}</strong></div>
         <div>{{ email }}</div>
-        <div>
-          <a href="{{ perfil_url }}" target="_blank">Ver perfil no Spotify</a>
-        </div>
+        <div><a href="{{ perfil_url }}" target="_blank">Ver perfil no Spotify</a></div>
       </div>
     </header>
 
-    <section
-      style="
-        padding: 1rem 2rem;
-        background-color: #1a1a1a;
-        text-align: center;
-        color: var(--text-light);
-      "
-    >
+    <section style="padding: 1rem 2rem; background-color: #1a1a1a; text-align: center; color: var(--text-light);">
       <p>
-        <strong>Emotionfy</strong> é uma aplicação que une música, inteligência
-        artificial e visualização criativa. Aqui você pode analisar a
-        <em>letra</em> da música que está ouvindo no Spotify, entender as
-        emoções por trás dela, e visualizar essas emoções como imagens geradas
-        por IA. Tudo isso em tempo real.
+        <strong>Emotionfy</strong> é uma aplicação que une música, inteligência artificial e visualização criativa.
+        Aqui você pode analisar a <em>letra</em> da música que está ouvindo no Spotify, entender as emoções por trás
+        dela, e visualizar essas emoções como imagens geradas por IA. Tudo isso em tempo real.
       </p>
     </section>
 
     <div class="container">
-      <div class="left-column">
+      <div class="column-left">
         <div class="card">
           <h2>🎧 Música Atual</h2>
           <button id="btn-track">Ver música atual</button>
@@ -223,14 +224,11 @@
           <h2>📜 Letra da Música</h2>
           <button id="btn-testar-genius">Buscar Letra</button>
           <pre id="teste-genius-resultado"></pre>
-          <textarea
-            id="letra-musica"
-            placeholder="A letra da música aparecerá aqui..."
-          ></textarea>
+          <textarea id="letra-musica" placeholder="A letra da música aparecerá aqui..."></textarea>
         </div>
       </div>
 
-      <div class="right-column">
+      <div class="column-middle">
         <div class="card">
           <h2>🧠 Análise Visual e Emocional</h2>
           <button id="btn-analisar-letra">Analisar Letra</button>
@@ -238,20 +236,57 @@
           <div id="imagem-analisada"></div>
         </div>
       </div>
+
+      <div class="column-right">
+        <div class="card">
+          <h2>🎨 Imagem Gerada pela IA</h2>
+          <button id="btn-gerar-imagem">Gerar Imagem</button>
+          <div id="imagem-container" style="margin-top: 1rem; display: flex; flex-direction: column;"></div>
+        </div>
+      </div>
     </div>
 
     <footer>Desenvolvido com ❤️ por Eduardo</footer>
 
     <script>
+      document.getElementById("btn-gerar-imagem").addEventListener("click", () => {
+        const botaoImagem = document.getElementById("btn-gerar-imagem");
+        const container = document.getElementById("imagem-container");
+
+        botaoImagem.disabled = true;
+        botaoImagem.textContent = "Gerando imagem...";
+
+        fetch("/gerar-imagem", {
+          method: "POST",
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.url) {
+              container.innerHTML = `
+                <p><strong>Prompt usado:</strong> ${data.prompt_usado}</p>
+                <img src="${data.url}" alt="Imagem gerada" />
+              `;
+            } else {
+              container.innerHTML = `<p>Erro: ${data.error || "Não foi possível gerar a imagem."}</p>`;
+            }
+          })
+          .catch((erro) => {
+            console.error("Erro ao chamar API de imagem:", erro);
+            container.innerHTML = "<p>Erro ao se comunicar com o servidor.</p>";
+          })
+          .finally(() => {
+            botaoImagem.disabled = false;
+            botaoImagem.textContent = "Gerar Imagem";
+          });
+      });
+
       document.getElementById("btn-track").addEventListener("click", () => {
         const trackNameEl = document.getElementById("track-name");
         trackNameEl.innerText = "Carregando...";
         fetch("/current-track")
           .then((res) => res.json())
           .then((data) => {
-            trackNameEl.innerText = data.error
-              ? `Erro: ${data.error}`
-              : `🎵 ${data.track}`;
+            trackNameEl.innerText = data.error ? `Erro: ${data.error}` : `🎵 ${data.track}`;
           })
           .catch(() => {
             trackNameEl.innerText = "Erro ao buscar música.";
@@ -286,7 +321,6 @@
       document.getElementById("btn-analisar-letra").addEventListener("click", () => {
         const textarea = document.getElementById("letra-musica");
         const analiseEl = document.getElementById("teste-genius-analise");
-        const imagemContainer = document.getElementById("imagem-analisada");
         const texto = textarea.value;
         const btn = document.getElementById("btn-analisar-letra");
 
@@ -296,7 +330,6 @@
         }
 
         analiseEl.innerHTML = "<p class='loading'>Analisando...</p>";
-        imagemContainer.innerHTML = "";
         btn.disabled = true;
         btn.innerText = "Analisando...";
 
@@ -320,8 +353,6 @@
                 <p>🎨 <strong>Dispositivos Estilísticos:</strong> ${data.dispositivos_estilisticos}</p>
                 <p>🔑 <strong>Palavras-chave:</strong> ${data.palavras_chave.join(", ")}</p>
               `;
-
-              imagemContainer.innerHTML = `<img src="${data.imagem_url}" alt="Imagem gerada" />`;
             }
           })
           .catch(() => {

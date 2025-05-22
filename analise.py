@@ -13,6 +13,9 @@ CORS(app)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Variável global para armazenar a última análise
+ultima_analise = None
+
 @app.route("/analisar-letra", methods=["POST"])
 def analisar_letra():
     data = request.get_json()
@@ -79,37 +82,47 @@ Letra:
             "palavras_chave": [p.strip() for p in match.group("palavras").split(",")]
         }
 
+        global ultima_analise
+        ultima_analise = resultado
+
         return jsonify(resultado)
 
     except Exception as e:
         print(f"Erro ao processar: {e}")
         return jsonify({"error": str(e)}), 500
 
-
-# Nova rota para gerar imagem com DALL·E 2
 @app.route("/gerar-imagem", methods=["POST"])
 def gerar_imagem():
-    data = request.get_json()
+    global ultima_analise
 
-    # Vamos pegar uma descrição para gerar a imagem, pode ser a emoção ou a descrição curta da análise
-    prompt_imagem = data.get("prompt")
-    if not prompt_imagem:
-        return jsonify({"error": "Campo 'prompt' é obrigatório para gerar imagem."}), 400
+    if not ultima_analise:
+        return jsonify({"error": "Nenhuma análise disponível para gerar imagem."}), 400
+
+    prompt_dinamico = (
+        f"Uma cena artística que represente a emoção '{ultima_analise['emocao']}', "
+        f"com o tema '{ultima_analise['tema']}'. "
+        f"Transmita visualmente a seguinte descrição: '{ultima_analise['descricao']}'. "
+        f"Use um estilo {ultima_analise['tom_narrativo'].lower()}, "
+        f"com elementos que comuniquem: '{ultima_analise['mensagem_central']}'. "
+        f"Incorpore cores como: {', '.join(ultima_analise['cores'])}. "
+        f"Inspiração visual: {', '.join(ultima_analise['palavras_chave'])}."
+    )
 
     try:
         response = client.images.generate(
             model="dall-e-2",
-            prompt=prompt_imagem,
+            prompt=prompt_dinamico,
             size="512x512",
             n=1
         )
-        image_url = response.data[0].url
-        return jsonify({"url": image_url})
-
+        url_imagem = response.data[0].url
+        return jsonify({
+            "prompt_usado": prompt_dinamico,
+            "url": url_imagem
+        })
     except Exception as e:
         print(f"Erro ao gerar imagem: {e}")
-        return jsonify({"error": str(e)}), 500
-
+        return jsonify({"error": "Erro ao gerar imagem"}), 500
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)

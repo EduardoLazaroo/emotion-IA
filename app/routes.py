@@ -109,3 +109,11 @@ def analisar_letra():
 
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
+    
+@main_bp.route('/gerar-imagem', methods=['POST'])
+def gerar_imagem_route():
+    try:
+        resposta = requests.post("http://127.0.0.1:5001/gerar-imagem")
+        return jsonify(resposta.json()), resposta.status_code
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
