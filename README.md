@@ -1,67 +1,70 @@
-# 🎧 Emotionfy – Música, Emoção e Inteligência Artificial
+# Emotionfy
 
-O **Emotionfy** é uma aplicação web que une **Spotify**, **Genius** e **OpenAI** para analisar letras de músicas, identificar emoções e **gerar imagens com inteligência artificial** que representam visualmente essas emoções.
+## Visao geral
 
-<img src="https://i.postimg.cc/nz29qyPG/emotionfy.png" alt="Emotionfy Banner" width="100" height="100" />
+Emotionfy e uma aplicacao web experimental que conecta a faixa atual de um usuario do Spotify a uma experiencia de analise emocional e geracao visual. O fluxo autentica o usuario, consulta a faixa em reproducao, procura a letra por meio do Genius e encaminha a analise e a geracao de imagem aos servicos configurados.
 
----
+O projeto e destinado a demonstracoes de integracao entre musica, interfaces web e IA. Nao deve ser apresentado como uma analise psicologica, clinica ou objetiva das letras.
 
-## ✨ Funcionalidades
+## Arquitetura
 
-- 🔐 Login com sua conta Spotify via OAuth 2.0
-- 🎵 Identificação da música que você está ouvindo no momento
-- 📜 Busca automática da letra da música via Genius API
-- 🧠 Análise emocional da letra com OpenAI GPT-4
-- 🎨 Geração de imagem com DALL·E baseada na emoção detectada
-- ⬇️ Opção para baixar a imagem gerada
-- 🌙 Interface escura, responsiva e intuitiva
+| Camada | Tecnologia e responsabilidade |
+|---|---|
+| Aplicacao web | Flask |
+| Interface | HTML, CSS e JavaScript |
+| Musica | Spotify OAuth e Spotify Web API |
+| Letras | Genius |
+| Analise e imagem | integracoes de IA configuradas pelo ambiente |
 
----
+As rotas estao em `app/routes.py`; as integracoes do Spotify e do Genius estao em `app/spotify.py` e `app/genius.py`; os templates ficam em `app/templates/`.
 
-## 🛠️ Tecnologias Utilizadas
+## Requisitos
 
-| Camada        | Tecnologia                                                                 |
-|---------------|----------------------------------------------------------------------------|
-| Backend       | [Python](https://www.python.org/), [Flask](https://flask.palletsprojects.com/) |
-| Frontend      | HTML, CSS (custom), JS Vanilla                                             |
-| Autenticação  | [Spotify OAuth 2.0](https://developer.spotify.com/documentation/general/guides/authorization/) |
-| APIs          | [Spotify Web API](https://developer.spotify.com/documentation/web-api/), [Genius API](https://docs.genius.com/), [OpenAI GPT-4 + DALL·E](https://platform.openai.com/) |
-| IA e Geração  | [OpenAI GPT-4](https://openai.com/gpt-4), [DALL·E](https://openai.com/dall-e) |
-| Hospedagem    | Localhost (modo dev)                                                       |
+- Python 3.10 ou superior;
+- conta e aplicacao configurada no Spotify Developer Dashboard;
+- credenciais do Genius;
+- credenciais dos servicos de IA usados pelo ambiente;
+- servico complementar de analise/geracao disponivel em `127.0.0.1:5001`, quando exigido pelas rotas.
 
----
+## Instalacao
 
-## 🧪 Como Rodar Localmente
-
-### Pré-requisitos
-
-- Python 3.10+
-- Conta Spotify com acesso a Developer Dashboard
-- Conta OpenAI com créditos ativos
-- Genius API Key
-
-### Instalação
+Na raiz do projeto:
 
 ```bash
-git clone https://github.com/seunome/emotionfy.git
-cd emotionfy
-python -m venv venv
-source venv/bin/activate  # no Windows: venv\Scripts\activate
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-Configuração
-Crie um arquivo .env com as variáveis:
+```
 
-env
+Crie um arquivo `.env` com as credenciais que a aplicacao requer. Os nomes exatos das variaveis devem ser confirmados no codigo e no arquivo de exemplo, quando disponivel. Nunca versione credenciais reais.
 
-SPOTIPY_CLIENT_ID=your_spotify_client_id
-SPOTIPY_CLIENT_SECRET=your_spotify_client_secret
-SPOTIPY_REDIRECT_URI=http://localhost:5000/callback
-GENIUS_API_KEY=your_genius_key
-OPENAI_API_KEY=your_openai_key
-Executar
-bash
+## Execucao
 
-python app.py
-# ou com Flask:
-flask run
-Acesse: http://localhost:5000
+O ponto de entrada presente no repositorio e `main.py`:
+
+```bash
+python main.py
+```
+
+Com o servidor iniciado, acesse `http://localhost:5000`.
+
+Antes de testar o fluxo completo, confirme que a URL de retorno cadastrada no Spotify corresponde ao ambiente local e que o servico complementar na porta 5001 esta acessivel. Sem essas configuracoes, o login, a analise ou a imagem podem falhar.
+
+## Funcionalidades verificadas
+
+- autenticacao por Spotify OAuth;
+- consulta da faixa atual;
+- busca de letra via Genius;
+- interface para apresentar a leitura emocional;
+- interface para apresentar e baixar uma imagem gerada.
+
+## Limites conhecidos
+
+- a aplicacao depende de credenciais e servicos externos;
+- o servico local na porta 5001 nao esta documentado como parte deste repositorio;
+- nao foi identificada suite automatizada de testes;
+- custos, limites de requisicao e tratamento de indisponibilidade dos provedores devem ser considerados antes de qualquer implantacao.
+
+## Apresentacao profissional
+
+O texto de publicacao, as capturas recomendadas e o prompt de imagem estao em [APRESENTACAO.md](APRESENTACAO.md).
