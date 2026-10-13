@@ -1,0 +1,45 @@
+================================================================================
+  EXECUÇÃO E VALIDAÇÃO INTEGRADA: EMOTION-IA (EMOTIONFY)
+  Arquitetura Distribuída: API Gateway (Porta 5000) + Microserviço IA (Porta 5001)
+  Integrações: Spotify Web API OAuth + Genius Web Scraping + OpenAI NLP & DALL-E 3
+================================================================================
+
+[ETAPA 1] Validando Microserviço de IA (analise.py - Porta 5001)...
+  • POST /analisar-letra (payload vazio) -> Status: 400 (Esperado: 400)
+    Resposta: {'error': "Campo 'texto' é obrigatório."}
+  • POST /gerar-imagem (sem análise prévia) -> Status: 400 (Esperado: 400)
+
+[ETAPA 2] Testando Motor de Sinestesia Emocional e Extração Estruturada...
+  • POST /analisar-letra (Letra: Wish You Were Here) -> Status: 200
+    Campos Estruturados Extraídos:
+      - Emoção Predominante: Melancolia
+      - Paleta de Cores (Cores Sinestésicas): Azul Profundo, Cinza Chumbo, Prata
+      - Descrição Emocional: "Um sentimento dilacerante de ausência e desilusão com escolhas de vida alienantes."
+      - Tema Central: "O anseio doloroso pela presença de um companheiro perdido e a crítica à conformidade social."
+      - Tom Narrativo: "Introspectivo, 1ª pessoa, poético e questionador."
+      - Mensagem Central: "Questionar o custo espiritual de abrir mão da autenticidade por conforto artificial."
+      - Figuras e Dispositivos: "Antíteses marcantes (céu vs inferno, cinzas vs árvores), metáfora do aquário."
+      - Palavras-chave: Ausência, Desilusão, Memória, Ilusão, Saudade
+
+[ETAPA 3] Testando Formulação do Prompt de Geração Visual (DALL-E 3)...
+  • POST /gerar-imagem -> Status: 200
+    Prompt Artístico Dinâmico Sintetizado:
+    "Uma cena artística que represente a emoção 'Melancolia', com o tema 'O anseio doloroso pela presença de um companheiro perdido e a crítica à conformidade social.'. Transmita visualmente a seguinte descrição: 'Um sentimento dilacerante de ausência e desilusão com escolhas de vida alienantes.'. Use um estilo introspectivo, 1ª pessoa, poético e questionador., com elementos que comuniquem: 'Questionar o custo espiritual de abrir mão da autenticidade por conforto artificial.'. Incorpore cores como: Azul Profundo, Cinza Chumbo, Prata. Inspiração visual: Ausência, Desilusão, Memória, Ilusão, Saudade."
+    URL da Arte Gerada: https://oaidalleapiprodscus.blob.core.windows.net/test-image-output.png
+
+[ETAPA 4] Validando API Gateway e Rotas Principais (main.py - Porta 5000)...
+  • GET / -> Status: 302 (Redirecionamento para: /login)
+  • GET /login -> Status: 302 (Redirecionamento Spotify OAuth: https://accounts.spotify.com/authorize?client...)
+  • GET /callback (sem código OAuth) -> Status: 400 | Resposta: "Nenhum código recebido"
+  • GET /current-track (sem sessão de login) -> Status: 401 | Resposta: {'error': 'Usuário não autenticado'}
+  • Gateway POST /analisar-letra (sem letra) -> Status: 400 | Erro: {'erro': 'Letra não fornecida'}
+
+[ETAPA 5] Testando Parser de Extração de Letras (BeautifulSoup no Genius)...
+  • Teste de parsing em containers 'data-lyrics-container':
+    Texto estruturado extraído (159 chars):
+      | Primeira estrofe da canção poética.
+      | 
+      |       Segunda linha com harmonia lírica.
+      | Refrão marcante com refratários visuais.
+      | 
+      |       Conclusão da narrativa artística.

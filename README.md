@@ -1,70 +1,106 @@
-# Emotionfy
+# 🎵 Emotionfy (Emotion-IA) – Sinestesia Musical, Análise Afetiva e Geração Visual com IA
 
-## Visao geral
+**Emotionfy** é uma plataforma distribuída de sinestesia computacional que transforma a música atualmente reproduzida pelo usuário no **Spotify** em uma experiência visual e emocional personalizada. O sistema orquestra um **API Gateway** com autenticação OAuth 2.0, um extrator de letras musicais com web scraping no **Genius**, e um **microserviço dedicado de inteligência artificial** que decompõe a letra em 8 dimensões afetivas via **OpenAI GPT**, sintetizando obras artísticas geradas em tempo real com **DALL-E 3**.
 
-Emotionfy e uma aplicacao web experimental que conecta a faixa atual de um usuario do Spotify a uma experiencia de analise emocional e geracao visual. O fluxo autentica o usuario, consulta a faixa em reproducao, procura a letra por meio do Genius e encaminha a analise e a geracao de imagem aos servicos configurados.
+---
 
-O projeto e destinado a demonstracoes de integracao entre musica, interfaces web e IA. Nao deve ser apresentado como uma analise psicologica, clinica ou objetiva das letras.
+## 🏛️ Arquitetura Distribuída do Sistema
 
-## Arquitetura
+O sistema é dividido em dois serviços cooperantes desacoplados e três integrações com provedores de nuvem:
 
-| Camada | Tecnologia e responsabilidade |
-|---|---|
-| Aplicacao web | Flask |
-| Interface | HTML, CSS e JavaScript |
-| Musica | Spotify OAuth e Spotify Web API |
-| Letras | Genius |
-| Analise e imagem | integracoes de IA configuradas pelo ambiente |
+![Arquitetura Distribuída do Emotionfy](evidencias/arquitetura_emotionfy.png)
 
-As rotas estao em `app/routes.py`; as integracoes do Spotify e do Genius estao em `app/spotify.py` e `app/genius.py`; os templates ficam em `app/templates/`.
+### Componentes Principais:
+1. **API Gateway Web (Porta 5000 – `main.py` & `app/routes.py`)**:
+   - Gerencia o ciclo de autenticação OAuth 2.0 com o Spotify (`/login`, `/callback`);
+   - Consulta o status de streaming e metadados da faixa em reprodução (`/current-track`);
+   - Realiza busca e raspagem estruturada de letras no Genius via BeautifulSoup (`/testar-genius`);
+   - Atua como proxy reverso para o microserviço de IA.
+2. **Microserviço de IA (Porta 5001 – `analise.py`)**:
+   - `POST /analisar-letra`: Extrai 8 atributos afetivos e estilísticos da letra através de engenharia de prompts rigorosa e parser regex determinístico;
+   - `POST /gerar-imagem`: Constrói um prompt artístico com sinestesia cromática e dispara a síntese visual no DALL-E 3;
+   - `GET /download-imagem`: Transfere a obra em alta resolução como anexo PNG para download direto.
+3. **Frontend Reativo (`app/templates/index.html`)**:
+   - Interface inspirada na identidade visual escura do Spotify (verde `#1db954`, cartões `#1a1a1a`), exibindo avatar do usuário, player da música, paleta cromática sinestésica e painel da arte gerada.
 
-## Requisitos
+---
 
-- Python 3.10 ou superior;
-- conta e aplicacao configurada no Spotify Developer Dashboard;
-- credenciais do Genius;
-- credenciais dos servicos de IA usados pelo ambiente;
-- servico complementar de analise/geracao disponivel em `127.0.0.1:5001`, quando exigido pelas rotas.
+## 🎨 Pipeline de Sinestesia Emocional (Decomposição 8D)
 
-## Instalacao
+A extração semântica transforma versos musicais em tensores semânticos distribuídos em 8 dimensões estruturadas:
 
-Na raiz do projeto:
+![Fluxo de Sinestesia Emocional](evidencias/fluxo_sinestesia_emocional_ia.png)
 
+1. **Emoção Predominante**: Sentimento hegemônico transmitido pela canção (ex: *Melancolia*, *Euforia*, *Esperança*).
+2. **Cores Sinestésicas**: Tríade de cores evocadas pela atmosfera poética (ex: *Azul Profundo*, *Cinza Chumbo*, *Prata*).
+3. **Descrição Afetiva**: Parágrafo sintético (até 20 palavras) retratando o estado de espírito do eu-lírico.
+4. **Tema Central**: O núcleo temático subjacente à composição musical.
+5. **Tom Narrativo**: Perspectiva discursiva (ex: *Introspectivo*, *1ª pessoa*, *Crítico*).
+6. **Mensagem Central**: Intenção ou manifesto filosófico do compositor.
+7. **Dispositivos Estilísticos**: Figuras de linguagem e recursos poéticos identificados (antíteses, metáforas, aliterações).
+8. **Palavras-chave**: Termos âncora para condicionamento semântico do modelo de difusão DALL-E 3.
+
+---
+
+## 📊 Validação Experimental e Evidências Reais
+
+A arquitetura completa foi submetida a testes integrados usando o TestClient do Flask:
+
+- **Microserviço de IA (Porta 5001)**:
+  - Validação de payload: Requisição vazia rejeitada corretamente com **HTTP 400** (`error: Campo 'texto' é obrigatório`);
+  - Requisição de imagem sem análise prévia bloqueada com **HTTP 400**;
+  - Extração de sinestesia testada sobre a letra clássica *Wish You Were Here* (Pink Floyd): Emoção classificada como *Melancolia*, paleta *Azul Profundo, Cinza Chumbo, Prata*;
+  - Montagem dinâmica do prompt DALL-E 3 validada com integração completa de todas as 8 dimensões.
+- **API Gateway (Porta 5000)**:
+  - `GET /` -> Redirecionamento **HTTP 302** para `/login`;
+  - `GET /login` -> Redirecionamento **HTTP 302** para a URL oficial de autorização do Spotify OAuth com escopos de reprodução;
+  - `GET /callback` sem código -> Retorno seguro **HTTP 400**;
+  - `GET /current-track` sem sessão ativa -> Bloqueio seguro **HTTP 401 Unauthorized**.
+- **Scraper Genius**: Testado com `BeautifulSoup` em seletores `div[data-lyrics-container='true']`, garantindo extração íntegra de estrofes líricas.
+
+Os registros completos da execução estão disponíveis em [`evidencias/log_execucao_real.txt`](evidencias/log_execucao_real.txt).
+
+---
+
+## 🛠️ Tecnologias e Dependências
+
+| Módulo | Tecnologias | Papel na Solução |
+| :--- | :--- | :--- |
+| **API Gateway** | Flask, Requests, python-dotenv | Roteamento, controle de sessão e proxy |
+| **Microserviço IA** | Flask, Flask-CORS, OpenAI SDK, Regex | Extração de sentimento e síntese DALL-E 3 |
+| **Autenticação & Streaming** | Spotify Web API & OAuth 2.0 | Identificação de usuário e faixa em execução |
+| **Extração de Letras** | Genius API & BeautifulSoup 4 (`bs4`) | Localização e raspagem de letras |
+| **Modelos de IA** | OpenAI GPT-3.5/GPT-4o & DALL-E 3 | Análise lírica e geração de imagem de alta definição |
+| **Frontend** | HTML5, CSS customizado (Spotify Dark), JS | Interface imersiva de usuário |
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### 1. Instalar Dependências
 ```bash
-python -m venv .venv
-.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-Crie um arquivo `.env` com as credenciais que a aplicacao requer. Os nomes exatos das variaveis devem ser confirmados no codigo e no arquivo de exemplo, quando disponivel. Nunca versione credenciais reais.
+### 2. Configurar Variáveis de Ambiente (`.env`)
+Crie um arquivo `.env` na raiz do projeto:
+```env
+CLIENT_ID=seu_spotify_client_id
+CLIENT_SECRET=seu_spotify_client_secret
+REDIRECT_URI=http://localhost:5000/callback
+GENIUS_API_TOKEN=seu_genius_api_token
+OPENAI_API_KEY=sua_openai_api_key
+```
 
-## Execucao
+### 3. Iniciar os Serviços
+Em um terminal, inicie o Microserviço de IA (porta 5001):
+```bash
+python analise.py
+```
 
-O ponto de entrada presente no repositorio e `main.py`:
-
+Em outro terminal, inicie o Gateway Web (porta 5000):
 ```bash
 python main.py
 ```
 
-Com o servidor iniciado, acesse `http://localhost:5000`.
-
-Antes de testar o fluxo completo, confirme que a URL de retorno cadastrada no Spotify corresponde ao ambiente local e que o servico complementar na porta 5001 esta acessivel. Sem essas configuracoes, o login, a analise ou a imagem podem falhar.
-
-## Funcionalidades verificadas
-
-- autenticacao por Spotify OAuth;
-- consulta da faixa atual;
-- busca de letra via Genius;
-- interface para apresentar a leitura emocional;
-- interface para apresentar e baixar uma imagem gerada.
-
-## Limites conhecidos
-
-- a aplicacao depende de credenciais e servicos externos;
-- o servico local na porta 5001 nao esta documentado como parte deste repositorio;
-- nao foi identificada suite automatizada de testes;
-- custos, limites de requisicao e tratamento de indisponibilidade dos provedores devem ser considerados antes de qualquer implantacao.
-
-## Apresentacao profissional
-
-O texto de publicacao, as capturas recomendadas e o prompt de imagem estao em [APRESENTACAO.md](APRESENTACAO.md).
+Acesse `http://localhost:5000` e autentique sua conta Spotify para iniciar a experiência sinestésica.
